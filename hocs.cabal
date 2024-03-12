@@ -1,0 +1,95 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           hocs
+version:        0.1.0.0
+synopsis:       Short description of your package
+description:    Please see the README on GitHub at <https://github.com/githubuser/hocs-stack#readme>
+category:       Web
+homepage:       https://github.com/omfj/hocs#readme
+bug-reports:    https://github.com/omfj/hocs/issues
+author:         Ole Magnus Fon Johnsen
+maintainer:     me@omfj.no
+copyright:      2024 Ole Magnus Fon Johnsen
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/omfj/hocs
+
+library
+  exposed-modules:
+      Commands
+      FileUtils
+      Templates
+  other-modules:
+      Paths_hocs
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , directory
+    , file-embed
+    , filepath
+    , pandoc
+    , scotty
+    , text
+    , utf8-string
+    , wai-logger
+    , wai-middleware-static
+    , warp
+  default-language: Haskell2010
+
+executable hocs-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_hocs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , directory
+    , file-embed
+    , filepath
+    , hocs
+    , pandoc
+    , scotty
+    , text
+    , utf8-string
+    , wai-logger
+    , wai-middleware-static
+    , warp
+  default-language: Haskell2010
+
+test-suite hocs-stack-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_hocs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , directory
+    , file-embed
+    , filepath
+    , hocs-stack
+    , pandoc
+    , scotty
+    , text
+    , utf8-string
+    , wai-logger
+    , wai-middleware-static
+    , warp
+  default-language: Haskell2010

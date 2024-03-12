@@ -1,0 +1,65 @@
+name: hocs
+version: 0.1.0.0
+github: "omfj/hocs"
+license: MIT
+author: "Ole Magnus Fon Johnsen"
+maintainer: "me@omfj.no"
+copyright: "2024 Ole Magnus Fon Johnsen"
+
+extra-source-files:
+  - README.md
+  - CHANGELOG.md
+
+synopsis: Short description of your package
+category: Web
+
+description: Please see the README on GitHub at <https://github.com/githubuser/hocs-stack#readme>
+
+dependencies:
+  - base >= 4.7 && < 5
+  - file-embed
+  - utf8-string
+  - directory
+  - filepath
+  - pandoc
+  - text
+  - scotty
+  - warp
+  - wai-logger
+  - wai-middleware-static
+
+ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Widentities
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wmissing-home-modules
+  - -Wpartial-fields
+  - -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  hocs-exe:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - hocs
+
+tests:
+  hocs-stack-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - hocs-stack

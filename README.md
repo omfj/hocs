@@ -2,6 +2,8 @@
 
 A simple command line tool to create a static documentation site from markdown files.
 
+Created for an assignment in the course [Advanced functional programming (INF221)](https://www.uib.no/emne/INF221) at the University of Bergen.
+
 ## Installation
 
 Clone the repo and run `stack install`. This will create an executable called `hocs-exe` in `bin/`.

@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Commands (parse)
+import Commands.Parse (parse)
 import System.Environment (getArgs)
 
 main :: IO ()

@@ -25,4 +25,9 @@ runInitCommand = do
     writeFile "pages/index.md" indexMdContents
     putStrLn "Created pages/index.md"
 
+    -- Create a static directory with a .gitkeep file
+    createDirectory "static"
+    writeFile "static/.gitkeep" ""
+    putStrLn "Created static/"
+
     putStrLn "Project initialized"

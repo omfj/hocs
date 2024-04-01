@@ -10,10 +10,10 @@ extra-source-files:
   - README.md
   - CHANGELOG.md
 
-synopsis: Short description of your package
+synopsis: A simple static site generator for documentation
 category: Web
 
-description: Please see the README on GitHub at <https://github.com/githubuser/hocs-stack#readme>
+description: Please see the README on GitHub at <https://github.com/omfj/hocs#readme>
 
 dependencies:
   - base >= 4.7 && < 5
@@ -54,7 +54,7 @@ executables:
       - hocs
 
 tests:
-  hocs-stack-test:
+  hocs-test:
     main: Spec.hs
     source-dirs: test
     ghc-options:
@@ -62,4 +62,6 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - hocs-stack
+      - hocs
+      - hspec
+      - neat-interpolation

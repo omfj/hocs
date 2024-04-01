@@ -6,8 +6,8 @@ cabal-version: 1.12
 
 name:           hocs
 version:        0.1.0.0
-synopsis:       Short description of your package
-description:    Please see the README on GitHub at <https://github.com/githubuser/hocs-stack#readme>
+synopsis:       A simple static site generator for documentation
+description:    Please see the README on GitHub at <https://github.com/omfj/hocs#readme>
 category:       Web
 homepage:       https://github.com/omfj/hocs#readme
 bug-reports:    https://github.com/omfj/hocs/issues
@@ -32,8 +32,12 @@ library
       Commands.Init
       Commands.Parse
       Commands.Serve
+      Commands.Version
+      Config
       FileUtils
       Templates
+      Toml
+      Types
   other-modules:
       Paths_hocs
   hs-source-dirs:
@@ -75,7 +79,7 @@ executable hocs-exe
     , warp
   default-language: Haskell2010
 
-test-suite hocs-stack-test
+test-suite hocs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -88,7 +92,9 @@ test-suite hocs-stack-test
     , directory
     , file-embed
     , filepath
-    , hocs-stack
+    , hocs
+    , hspec
+    , neat-interpolation
     , pandoc
     , scotty
     , text

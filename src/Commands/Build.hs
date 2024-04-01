@@ -8,12 +8,7 @@ import FileUtils (getAllFiles)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (takeDirectory)
 import Text.Pandoc (PandocError, def, readMarkdown, runPure, writeHtml5String)
-
-data HTMLFileData = HTMLFileData
-    { filename :: FilePath
-    , contents :: String
-    }
-    deriving (Show)
+import Types (HTMLFileData (..))
 
 convertToMarkdown :: String -> Either PandocError T.Text
 convertToMarkdown markdownString =

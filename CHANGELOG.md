@@ -1,4 +1,4 @@
-# Changelog for `hocs-stack`
+# Changelog for `hocs`
 
 All notable changes to this project will be documented in this file.
 

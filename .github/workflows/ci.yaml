@@ -11,6 +11,9 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      STACK_YAML: stack.yaml
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,25 +23,19 @@ jobs:
           enable-stack: true
           stack-version: "latest"
 
-      - name: 📑 Restore cache
-        uses: actions/cache/restore@v3
-        id: cache
-        env:
-          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+      - name: 💾 Cache Haskell dependencies
+        uses: actions/cache@v4
         with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.key }}-
+          path: |
+            ~/.stack/stack.sqlite3
+            ~/.stack/snapshots
+          key: ${{ env.STACK_YAML }}-${{ hashFiles(format('./{0}', env.STACK_YAML)) }}
+          restore-keys: |
+            ${{ env.STACK_YAML }}-${{ hashFiles(format('./{0}', env.STACK_YAML)) }}
+            ${{ env.STACK_YAML }}-
 
-      - name: 🔨 Build
+      - name: 🏗️ Build
         run: stack build
-
-      - name: 💾 Save cache
-        uses: actions/cache/save@v3
-        if: steps.cache.outputs.cache-hit != 'true'
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: 🧪 Test
         run: stack test

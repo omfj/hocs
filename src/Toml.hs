@@ -84,10 +84,10 @@ tableHeaderName :: String -> String
 tableHeaderName = init . tail
 
 parseKeyValue :: String -> (String, String)
-parseKeyValue l =
-    let key = trim $ takeWhile (/= '=') l
-        value = trim $ drop 1 $ dropWhile (/= '=') l
-     in (key, value)
+parseKeyValue l = (key, value)
+  where
+    key = trim $ takeWhile (/= '=') l
+    value = trim $ drop 1 $ dropWhile (/= '=') l
 
 parseValue :: String -> TomlValue
 parseValue value
@@ -102,11 +102,11 @@ parseValue value
 
 parseArray :: String -> [TomlValue]
 parseArray "" = []
-parseArray contents =
-    let (val, rest) = break (== ',') contents
-     in case trim val of
-            "" -> []
-            trimmedVal -> parseValue trimmedVal : parseArray (trim $ drop 1 rest)
+parseArray contents = case trim val of
+    "" -> []
+    trimmedVal -> parseValue trimmedVal : parseArray (trim $ drop 1 rest)
+  where
+    (val, rest) = break (== ',') contents
 
 isArray :: String -> Bool
 isArray s = case s of

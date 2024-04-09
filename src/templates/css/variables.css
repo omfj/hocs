@@ -1,0 +1,10 @@
+:root {
+  --background: #f4f4f4;
+  --foreground: #333;
+
+  --link: #007bff;
+  --link-hover: #0056b3;
+
+  --sidebar-background: #333;
+  --sidebar-border: #222;
+}

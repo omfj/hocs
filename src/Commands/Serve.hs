@@ -5,36 +5,20 @@ module Commands.Serve (
 ) where
 
 import Config (getBuildDirectory, getPort, loadConfig)
+
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Text.Lazy.IO as TIO
-import FileUtils (getAllFiles)
-import System.Directory (doesFileExist)
-import System.FilePath (makeRelative, takeFileName)
-import Web.Scotty (ScottyM, get, html, literal, scotty)
-
-createFileHandler :: FilePath -> FilePath -> ScottyM ()
-createFileHandler root filePath = get (literal routePath) $ do
-    fileExists <- liftIO $ doesFileExist filePath
-    if fileExists
-        then do
-            fileContents <- liftIO $ TIO.readFile filePath
-            html fileContents
-        else do
-            html "<h1>404 - Not Found</h1>"
-  where
-    routePath = makeWebPath root filePath
-
-makeWebPath :: FilePath -> FilePath -> String
-makeWebPath root filePath = case webPath of
-    "index" -> "/"
-    _ -> "/" ++ webPath
-  where
-    relativePath = makeRelative root filePath
-    fileName = takeFileName relativePath
-    webPath = reverse $ drop 5 $ reverse fileName
-
-setupRoutes :: String -> [FilePath] -> ScottyM ()
-setupRoutes buildDir = mapM_ (createFileHandler buildDir)
+import qualified Data.Text.Lazy as T
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import Network.Wai.Middleware.Static (addBase, noDots, staticPolicy, (>->))
+import System.Directory (doesDirectoryExist)
+import Web.Scotty (
+    captureParam,
+    get,
+    html,
+    middleware,
+    regex,
+    scotty,
+ )
 
 runServeCommand :: IO ()
 runServeCommand = do
@@ -45,10 +29,24 @@ runServeCommand = do
             let port = fromIntegral $ getPort config
             let buildDirectory = getBuildDirectory config
 
-            allFiles <- getAllFiles buildDirectory
-            case allFiles of
-                [] -> putStrLn $ "No files found in build directory ( " ++ buildDirectory ++ " ) . Have you built the project?"
-                _ -> do
-                    let hostname = "localhost"
-                    putStrLn $ "Listening on http://" ++ hostname ++ ":" ++ show port
-                    scotty port (setupRoutes buildDirectory allFiles)
+            dirExists <- doesDirectoryExist buildDirectory
+            if dirExists
+                then do
+                    putStrLn $ "Serving files from " ++ buildDirectory ++ " on port " ++ show port
+                    serveFiles port buildDirectory
+                else putStrLn "Build directory does not exist"
+
+serveFiles :: Int -> String -> IO ()
+serveFiles port basePath = do
+    scotty port $ do
+        middleware logStdoutDev
+        middleware $ staticPolicy (noDots >-> addBase basePath)
+
+        get "/" $ do
+            file <- liftIO $ readFile $ basePath ++ "/index.html"
+            html $ T.pack file
+
+        get (regex ".*") $ do
+            filename <- captureParam "0"
+            file <- liftIO $ readFile $ basePath ++ "/" ++ filename ++ ".html"
+            html $ T.pack file

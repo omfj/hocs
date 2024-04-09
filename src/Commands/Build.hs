@@ -1,40 +1,86 @@
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+
 module Commands.Build (
     runBuildCommand,
+    createHTMLFilename,
 ) where
 
 import Config (getBuildDirectory, loadConfig)
+import Control.Monad (when)
 import Data.List (isSuffixOf)
 import qualified Data.Text as T
-import FileUtils (getAllFiles)
-import System.Directory (createDirectoryIfMissing)
-import System.FilePath (takeDirectory)
-import Text.Pandoc (PandocError, def, readMarkdown, runPure, writeHtml5String)
-import Types (HTMLFileData (..))
+import FileUtils (File (..), getAllFiles, writeFileAndDirectories)
+import System.Directory (createDirectoryIfMissing, doesDirectoryExist, removeDirectoryRecursive)
+import System.FilePath (replaceExtension)
+import Templates (layoutHtmlContents, renderHTMLTemplate, styleCssContents)
+import Text.Pandoc (def, readMarkdown, runIO, writeHtml5String)
 
-convertToMarkdown :: String -> Either PandocError T.Text
-convertToMarkdown markdownString = runPure $ do
-    doc <- readMarkdown def (T.pack markdownString)
-    writeHtml5String def doc
+-- ignoredStaticFiles :: [String]
+-- ignoredStaticFiles = [".gitkeep"]
 
 createHTMLFilename :: FilePath -> FilePath
-createHTMLFilename = drop 6 . (++ ".html") . reverse . drop 3 . reverse
-
-createHTMLFileData :: FilePath -> Either PandocError T.Text -> HTMLFileData
-createHTMLFileData name (Left _) = HTMLFileData (createHTMLFilename name) "<p>500</p>"
-createHTMLFileData name (Right htmlText) = HTMLFileData (createHTMLFilename name) (T.unpack htmlText)
-
-createBuildDirectory :: [HTMLFileData] -> IO ()
-createBuildDirectory = mapM_ createHTMLFile
-
-createFileAndFolder :: FilePath -> String -> IO ()
-createFileAndFolder filePath fileContent = do
-    createDirectoryIfMissing True directory
-    writeFile filePath fileContent
+createHTMLFilename = filename
   where
-    directory = takeDirectory filePath
+    filename = removeFirstFolder . replaceFileExtension
+    removeFirstFolder = drop 1 . dropWhile (/= '/') . tail
+    replaceFileExtension = flip replaceExtension "html"
 
-createHTMLFile :: HTMLFileData -> IO ()
-createHTMLFile htmlFile = createFileAndFolder (filename htmlFile) (contents htmlFile)
+markdownContents :: String -> IO String
+markdownContents filePath = do
+    contents <- readFile filePath
+    result <- runIO $ do
+        doc <- readMarkdown def (T.pack contents)
+        writeHtml5String def doc
+    case result of
+        Left err -> return $ "Error: " ++ show err
+        Right html -> do
+            return $ renderHTMLTemplate layoutHtmlContents [("content", T.unpack html)]
+
+createHTMLFile :: FilePath -> IO File
+createHTMLFile filePath = do
+    let fileName = createHTMLFilename filePath
+    fileContents <- markdownContents filePath
+    putStrLn $ "Creating file: " ++ fileName
+    return $
+        File
+            { name = fileName
+            , contents = fileContents
+            }
+
+createStaticFile :: FilePath -> IO File
+createStaticFile filePath = do
+    fileContents <- readFile filePath
+    let fileName = removeFirstFolder filePath
+    putStrLn $ "Creating file: " ++ fileName
+    return $
+        File
+            { name = fileName
+            , contents = fileContents
+            }
+  where
+    removeFirstFolder = drop 1 . dropWhile (/= '/') . tail
+
+isMarkdownFile :: String -> Bool
+isMarkdownFile = isSuffixOf ".md"
+
+removeDirectoryRecursiveIfExists :: FilePath -> IO ()
+removeDirectoryRecursiveIfExists path = do
+    exists <- doesDirectoryExist path
+    when exists $ removeDirectoryRecursive path
+
+getPagesFiles :: IO [File]
+getPagesFiles = getAllFiles "pages" >>= mapM createHTMLFile . filter isMarkdownFile
+
+getStaticFiles :: IO [File]
+getStaticFiles = do
+    let defaultStaticFiles = [File{name = "css/styles.css", contents = styleCssContents}]
+    staticFiles <- getAllFiles "static" >>= mapM createStaticFile
+    return $ defaultStaticFiles ++ staticFiles
+
+createBuildDirectory :: FilePath -> [File] -> IO ()
+createBuildDirectory buildDirectory files = do
+    createDirectoryIfMissing True buildDirectory
+    mapM_ (\file -> writeFileAndDirectories (buildDirectory ++ "/" ++ name file) (contents file)) files
 
 runBuildCommand :: IO ()
 runBuildCommand = do
@@ -43,17 +89,15 @@ runBuildCommand = do
         Nothing -> putStrLn "No configuration file found"
         Just config -> do
             let buildDirectory = getBuildDirectory config
+
+            -- Remove the build directory if it exists
+            removeDirectoryRecursiveIfExists buildDirectory
+
             -- Get the path of all files in the pages directory
-            allFiles <- getAllFiles "pages"
-            let allMarkdownFiles = filter (".md" `isSuffixOf`) allFiles
-            allMarkdownContents <- mapM readFile allMarkdownFiles
+            allPagesFiles <- getPagesFiles
+            allStaticFiles <- getStaticFiles
 
-            -- Convert Markdown to HTML and create HTMLFileData instances
-            let htmlContents = map convertToMarkdown allMarkdownContents
-            let htmlFiles = zipWith createHTMLFileData allMarkdownFiles htmlContents
+            let allFiles = allPagesFiles ++ allStaticFiles
 
-            -- Prefix all filenames with build directory
-            let htmlFilesWithBuildDirectory = map (\htmlFile -> htmlFile{filename = buildDirectory ++ "/" ++ filename htmlFile}) htmlFiles
-
-            -- Print HTMLFileData instances
-            createBuildDirectory htmlFilesWithBuildDirectory
+            -- Create the build directory and write the contents of the files
+            createBuildDirectory buildDirectory allFiles

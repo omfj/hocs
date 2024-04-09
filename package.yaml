@@ -23,9 +23,8 @@ dependencies:
   - filepath
   - pandoc
   - text
-  - scotty
-  - warp
-  - wai-logger
+  - scotty >= 0.22
+  - wai-extra
   - wai-middleware-static
 
 ghc-options:

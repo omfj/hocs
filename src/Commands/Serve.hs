@@ -22,19 +22,16 @@ import Web.Scotty (
 
 runServeCommand :: IO ()
 runServeCommand = do
-    maybeConfig <- loadConfig
-    case maybeConfig of
-        Nothing -> putStrLn "No configuration file found"
-        Just config -> do
-            let port = fromIntegral $ getPort config
-            let buildDirectory = getBuildDirectory config
+    config <- loadConfig
+    let port = fromIntegral $ getPort config
+    let buildDirectory = getBuildDirectory config
 
-            dirExists <- doesDirectoryExist buildDirectory
-            if dirExists
-                then do
-                    putStrLn $ "Serving files from " ++ buildDirectory ++ " on port " ++ show port
-                    serveFiles port buildDirectory
-                else putStrLn "Build directory does not exist"
+    dirExists <- doesDirectoryExist buildDirectory
+    if dirExists
+        then do
+            putStrLn $ "Serving files from " ++ buildDirectory ++ " on port " ++ show port
+            serveFiles port buildDirectory
+        else putStrLn "Build directory does not exist"
 
 serveFiles :: Int -> String -> IO ()
 serveFiles port basePath = do

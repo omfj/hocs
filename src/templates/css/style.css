@@ -12,17 +12,34 @@ html {
 
 body {
   font-family: "Roboto", sans-serif;
-  font-size: 1.6rem;
-  line-height: 1.6;
+  font-size: 1.5rem;
+  line-height: 1.5;
   background-color: var(--background);
   color: var(--foreground);
-  padding: 5rem 2rem;
+  min-height: 100vh;
   display: flex;
-  gap: 2rem;
+  flex-direction: column;
 }
 
-main {
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wrapper {
+  display: flex;
+  flex: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   max-width: 800px;
+  padding: 2rem;
 }
 
 a {
@@ -35,12 +52,12 @@ a:hover {
 }
 
 .sidebar {
-  position: sticky;
-  top: 0;
   padding: 2rem;
-  background-color: var(--sidebar-background);
-  border-radius: 1rem;
-  border: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  width: 100%;
+  border-right: 1px solid var(--border);
 }
 
 .sidebar menu {

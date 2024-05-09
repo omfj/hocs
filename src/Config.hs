@@ -1,4 +1,4 @@
-{-# HLINT ignore "Use newtype instead of data" #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
@@ -6,9 +6,12 @@ module Config (
     loadConfig,
     getPort,
     getBuildDirectory,
+    getTitle,
 ) where
 
-import Toml (Toml (..), TomlInteger (..), TomlString (..), TomlTable (..), TomlValue (..), parseToml)
+import Control.Exception (throwIO)
+import Data.Aeson (FromJSON, parseJSON, withObject, (.:))
+import Data.Yaml (decodeFileEither)
 
 data Theme = Theme
     { title :: String
@@ -29,6 +32,9 @@ data Config = Config
     }
     deriving (Eq, Show)
 
+getTitle :: Config -> String
+getTitle = title . theme
+
 getPort :: Config -> Integer
 getPort = port . build
 
@@ -36,47 +42,30 @@ getBuildDirectory :: Config -> String
 getBuildDirectory = directory . build
 
 configPath :: String
-configPath = "./hocs.toml"
+configPath = "./hocs.yaml"
 
-loadConfig :: IO (Maybe Config)
+instance FromJSON Theme where
+    parseJSON = withObject "Theme" $ \v ->
+        Theme
+            <$> v .: "title"
+            <*> v .: "description"
+
+instance FromJSON Build where
+    parseJSON = withObject "Build" $ \v ->
+        Build
+            <$> v .: "port"
+            <*> v .: "directory"
+
+instance FromJSON Config where
+    parseJSON = withObject "Config" $ \v ->
+        Config
+            <$> v .: "name"
+            <*> v .: "theme"
+            <*> v .: "build"
+
+loadConfig :: IO Config
 loadConfig = do
-    contents <- readFile configPath
-    return $ case parseToml contents of
-        Left _ -> Nothing
-        Right toml -> Just $ tomlToConfig toml
-
-tomlToConfig :: Toml -> Config
-tomlToConfig (Toml (TomlTable table)) =
-    Config
-        { name = name
-        , theme = tomlToTheme themeTable
-        , build = tomlToBuild buildTable
-        }
-  where
-    themeTable = lookup "theme" table
-    buildTable = lookup "build" table
-    name = tomlToString $ lookup "name" table
-
-tomlToTheme :: Maybe TomlValue -> Theme
-tomlToTheme (Just (TomlTableValue (TomlTable table))) =
-    Theme
-        { title = tomlToString $ lookup "title" table
-        , description = tomlToString $ lookup "description" table
-        }
-tomlToTheme _ = Theme "" ""
-
-tomlToBuild :: Maybe TomlValue -> Build
-tomlToBuild (Just (TomlTableValue (TomlTable table))) =
-    Build
-        { port = tomlToInteger $ lookup "port" table
-        , directory = tomlToString $ lookup "directory" table
-        }
-tomlToBuild _ = Build 0 ""
-
-tomlToString :: Maybe TomlValue -> String
-tomlToString (Just (TomlStringValue (TomlString s))) = s
-tomlToString _ = ""
-
-tomlToInteger :: Maybe TomlValue -> Integer
-tomlToInteger (Just (TomlIntegerValue (TomlInteger i))) = i
-tomlToInteger _ = 0
+    result <- decodeFileEither configPath
+    case result of
+        Left err -> throwIO err
+        Right config -> return config

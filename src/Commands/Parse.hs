@@ -19,7 +19,7 @@ parse ["--help"] = runHelpCommand
 parse ["-h"] = runHelpCommand
 parse ["--version"] = runVersionCommand
 parse args = do
-    if Prelude.null args
+    if null args
         then putStrLn "No command provided"
         else putStrLn $ "Unknown command: " ++ unwords args
     putStrLn ""

@@ -2,10 +2,14 @@ module FileUtils (
     File (..),
     getAllFiles,
     writeFileAndDirectories,
+    isMarkdownFile,
+    removeDirectoryRecursiveIfExists,
+    removeFirstFolder,
 ) where
 
-import Control.Monad (filterM, forM)
-import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist, listDirectory)
+import Control.Monad (filterM, forM, when)
+import Data.List (isSuffixOf)
+import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist, listDirectory, removeDirectoryRecursive)
 import System.FilePath (takeDirectory, (</>))
 
 data File = File
@@ -17,21 +21,31 @@ data File = File
 getAllFiles :: FilePath -> IO [FilePath]
 getAllFiles dir = do
     dirExists <- doesDirectoryExist dir
-    if not dirExists
-        then return []
-        else do
-            entries <- listDirectory dir
-
-            let fullPaths = map (dir </>) entries
-
-            files <- filterM doesFileExist fullPaths
-            dirs <- filterM doesDirectoryExist fullPaths
-            filesInSubdirs <- concat <$> forM dirs getAllFiles
-
-            return $ files ++ filesInSubdirs
+    if dirExists
+        then
+            ( do
+                entries <- listDirectory dir
+                let fullPaths = map (dir </>) entries
+                files <- filterM doesFileExist fullPaths
+                dirs <- filterM doesDirectoryExist fullPaths
+                filesInSubdirs <- concat <$> forM dirs getAllFiles
+                return $ files ++ filesInSubdirs
+            )
+        else return []
 
 writeFileAndDirectories :: FilePath -> String -> IO ()
 writeFileAndDirectories filePath fileContents = do
     let directory = takeDirectory filePath
     createDirectoryIfMissing True directory
     writeFile filePath fileContents
+
+isMarkdownFile :: String -> Bool
+isMarkdownFile = isSuffixOf ".md"
+
+removeDirectoryRecursiveIfExists :: FilePath -> IO ()
+removeDirectoryRecursiveIfExists path = do
+    exists <- doesDirectoryExist path
+    when exists $ removeDirectoryRecursive path
+
+removeFirstFolder :: String -> String
+removeFirstFolder = drop 1 . dropWhile (/= '/') . tail

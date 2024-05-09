@@ -26,6 +26,8 @@ dependencies:
   - scotty >= 0.22
   - wai-extra
   - wai-middleware-static
+  - yaml
+  - aeson
 
 ghc-options:
   - -Wall

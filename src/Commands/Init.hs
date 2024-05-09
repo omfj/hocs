@@ -3,7 +3,7 @@ module Commands.Init (
 ) where
 
 import System.Directory (createDirectory)
-import Templates (gitIgnoreContents, hocsTomlContents, indexMdContents)
+import Templates (gitIgnoreContents, hocsYAMLContents, indexMdContents)
 
 runInitCommand :: IO ()
 runInitCommand = do
@@ -14,8 +14,8 @@ runInitCommand = do
     putStrLn "Created .gitignore"
 
     -- Create the hocs.toml file
-    writeFile "hocs.toml" hocsTomlContents
-    putStrLn "Created hocs.toml"
+    writeFile "hocs.yaml" hocsYAMLContents
+    putStrLn "Created hocs.yaml"
 
     -- Create an empty pages directory
     createDirectory "pages"

@@ -1,0 +1,9 @@
+name: "hocs"
+
+theme:
+  title: "First hocs project"
+  description: "Documentation for the Hocs project"
+
+build:
+  port: 3000
+  directory: "build"

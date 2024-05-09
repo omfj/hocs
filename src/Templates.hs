@@ -2,10 +2,11 @@
 
 module Templates (
     gitIgnoreContents,
-    hocsTomlContents,
+    hocsYAMLContents,
     indexMdContents,
     styleCssContents,
-    layoutHtmlContents,
+    variablesCssContents,
+    layoutHTMLContents,
     renderHTMLTemplate,
 ) where
 
@@ -16,8 +17,8 @@ import Data.List (isPrefixOf)
 gitIgnoreContents :: String
 gitIgnoreContents = BU.toString $(embedFile "src/templates/gitignore")
 
-hocsTomlContents :: String
-hocsTomlContents = BU.toString $(embedFile "src/templates/hocs.toml")
+hocsYAMLContents :: String
+hocsYAMLContents = BU.toString $(embedFile "src/templates/hocs.yaml")
 
 indexMdContents :: String
 indexMdContents = BU.toString $(embedFile "src/templates/index.md")
@@ -25,8 +26,11 @@ indexMdContents = BU.toString $(embedFile "src/templates/index.md")
 styleCssContents :: String
 styleCssContents = BU.toString $(embedFile "src/templates/css/style.css")
 
-layoutHtmlContents :: String
-layoutHtmlContents = BU.toString $(embedFile "src/templates/html/layout.html")
+variablesCssContents :: String
+variablesCssContents = BU.toString $(embedFile "src/templates/css/variables.css")
+
+layoutHTMLContents :: String
+layoutHTMLContents = BU.toString $(embedFile "src/templates/html/layout.html")
 
 renderHTMLTemplate :: String -> [(String, String)] -> String
 renderHTMLTemplate template [] = template

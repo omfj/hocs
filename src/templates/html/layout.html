@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My App</title>
+    <title>{{title}}</title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
 
   <body>
-    <aside class="sidebar">
-      <menu>
-        <li><a href="/">Home</a></li>
-        <li><a href="/foo/bar">Foobar</a></li>
-        <li><a href="/what">What</a></li>
-      </menu>
-    </aside>
-    <main>{{content}}</main>
+    <header>
+      <h1>{{title}}</h1>
+    </header>
+
+    <div class="wrapper">
+      <aside class="sidebar">
+        <menu>{{sidebarItems}}</menu>
+      </aside>
+
+      <div class="content">{{content}}</div>
+    </div>
   </body>
 </html>
